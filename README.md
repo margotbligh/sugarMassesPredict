@@ -4,7 +4,7 @@ Command line executable tool to calculate all possible glycan molecules and the 
 # dependencies
 * pandas
 * numpy
-* python
+* python 3
 
 # input parameters 
 ## required
