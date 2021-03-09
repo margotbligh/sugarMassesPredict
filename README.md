@@ -10,7 +10,7 @@ command line tool to calculate all possible glycan molecules and the *m/z* value
 ## required
 * dp (degree of polymerisation) range
 * whether pentose monomers should be used in addition to hexose
-* modifications - possible options are none, all, or on any combination of:
+* modifications - possible options are none, all, or any combination of:
     * sulphate
     * carboxyl
     * phosphate
