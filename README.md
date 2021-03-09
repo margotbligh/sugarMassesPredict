@@ -1,5 +1,5 @@
 # sugarMassesPredict
-Command line executable tool to calculate all possible glycan molecules and the m/z values of their ions given a set up input parameters.
+command line tool to calculate all possible glycan molecules and the *m/z* values of their ions given a set of input parameters
 
 # dependencies
 * pandas
@@ -11,14 +11,14 @@ Command line executable tool to calculate all possible glycan molecules and the 
 * dp (degree of polymerisation) range
 * whether pentose monomers should be used in addition to hexose
 * modifications - possible options are none, all, or on any combination of:
-  * sulphate
-  * carboxyl
-  * phosphate
-  * deoxy
-  * N-acetyl
-  * O-acetyl
-  * O-methyl
-  * anhydrobridge
+    * sulphate
+    * carboxyl
+    * phosphate
+    * deoxy
+    * N-acetyl
+    * O-acetyl
+    * O-methyl
+    * anhydrobridge
 * maximum number of modifications per monomer on average
 * ionisatione mode
 * scan range (*m/z*)
@@ -27,7 +27,83 @@ Command line executable tool to calculate all possible glycan molecules and the 
 * output file path - defaults to "predicted_sugars.txt"
 * options to do with the calculation of the possible number of structural isomers (but this section needs to be fixed)
 
+# output
+tab delimited text file with one row per molecule. *m/z* values outside the scan range as shown as "NA", and molecules with no ions with *m/z* values within the scan are not returned. columns are as follows:
+* degree of polymerisation (dp)
+* name
+* monoisotopic mass (Da)
+* sum formula
+* columns with *m/* values of possible ions given the input parameters.
+    * positive mode: 
+        * \[M+H\]<sup>+</sup>
+        * \[M+Na\]<sup>+</sup>
+    * negative mode: 
+      * \[M+Cl\]<sup>-</sup>
+      * \[M+CHOO\]<sup>-</sup>
+      * \[M+2Cl\]<sup>2-</sup>
+      * \[M+2CHOO\]<sup>2-</sup>
+      * \[M+Cl-H\]<sup>2-</sup>
+      * \[M+CHOO-H\]<sup>2-</sup>
+      * \[M+CHOO+Cl\]<sup>2-</sup>
+      * \[M-*n*H\]<sup>*n*-</sup>, where n is 1 to the maximum number anionic groups that any single molecule in the table has
+* if parameters related to isomers were specified in the input, there is an additional column for the number of possible isomers per molecule
+
 # how to run
-The help menu can be accessed with:
-````
+the help menu accessed with:
+```
 sugarMassesPredict.py -h
+```
+
+returns the following:
+```
+usage: sugarMassesPredict.py [-h] -dp int int [-p int] -m str [str ...]
+                             [-n int] [-ld str [str ...]] [-oh int] [-b int]
+                             -i str [str ...] -s int int [-l label]
+                             [-o filepath]
+
+Script to predict possible masses of unknown sugars. Written by Margot Bligh.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -dp int int, --dp_range int int
+                        DP range to predict within: two space separated
+                        numbers required (lower first)
+  -p int, --pent_option int
+                        should pentose monomers be considered as well as
+                        hexose: 0 for no {default}, 1 for yes
+  -m str [str ...], --modifications str [str ...]
+                        space separated list of modifications to consider.
+                        allowed values: none OR all OR any combination of
+                        sulphate, carboxyl, phosphate, deoxy, nacetyl,
+                        omethyl, anhydrobridge, oacetyl
+  -n int, --nmod_max int
+                        max no. of modifications per monomer on average
+                        {default 1}
+  -ld str [str ...], --LorD_isomers str [str ...]
+                        isomers calculated for L and/or D enantiomers {default
+                        D only}. write space separated if both
+  -oh int, --OH_stereo int
+                        stereochem of OH groups considered when calculating
+                        no. of isomers: 0 for no {default}, 1 for yes
+  -b int, --bond_stereo int
+                        stereochem of glycosidic bonds and reducing end
+                        anomeric carbons considered when calculating no. of
+                        isomers: 0 for no {default}, 1 for yes
+  -i str [str ...], --ESI_mode str [str ...]
+                        neg and/or pos mode for ionisation (space separated if
+                        both)
+  -s int int, --scan_range int int
+                        mass spec scan range to predict within: two space
+                        separated numbers required (lower first)
+  -l label, --label label
+                        name a label added to the oligosaccharide. if not
+                        labelled do not include. options: procainamide OR
+                        benzoic_acid.
+  -o filepath, --output filepath
+                        filepath to .txt file for output table {default:
+                        predicted_sugars.txt}
+```
+
+
+
+
