@@ -182,7 +182,8 @@ ion_mdiff = {
     "Na": 22.98977,
     "Cl": 34.968853,
     "CHOO": 44.997655,
-    "NH4": 18.034374
+    "NH4": 18.034374,
+    "K": 38.963708
 }
 
 e_mdiff = 0.000548579909
@@ -753,18 +754,20 @@ if len(list(set(modifications).intersection(modifications_anionic))) >= 1:
 
     # calculate m/z values for neutral molecules
     if "neg" in ESI_mode:
-        masses_neutral['[M-H]'] = masses_neutral.mass - ion_mdiff['H'] + e_mdiff
-        masses_neutral['[M+Cl]'] = masses_neutral.mass + ion_mdiff['Cl'] + e_mdiff
-        masses_neutral['[M+CHOO]'] = masses_neutral.mass + ion_mdiff['CHOO'] + e_mdiff
-        masses_neutral['[M-2H]'] = (masses_neutral.mass - 2 * ion_mdiff['H'] + 2 * e_mdiff) / 2
-        masses_neutral['[M+2Cl]'] = (masses_neutral.mass + 2 * ion_mdiff['Cl'] + 2 * e_mdiff) / 2
-        masses_neutral['[M+2CHOO]'] = (masses_neutral.mass + 2 * ion_mdiff['CHOO'] + 2 * e_mdiff) / 2
-        masses_neutral['[M+Cl-H]'] = (masses_neutral.mass + ion_mdiff['Cl'] - ion_mdiff['H'] + 2 * e_mdiff) / 2
-        masses_neutral['[M+CHOO-H]'] = (masses_neutral.mass + ion_mdiff['CHOO'] - ion_mdiff['H'] + 2 * e_mdiff) / 2
-        masses_neutral['[M+CHOO+Cl]'] = (masses_neutral.mass + ion_mdiff['CHOO'] + ion_mdiff['Cl'] + 2 * e_mdiff) / 2
+        masses_neutral['[M-H]-'] = masses_neutral.mass - ion_mdiff['H'] + e_mdiff
+        masses_neutral['[M+Cl]-'] = masses_neutral.mass + ion_mdiff['Cl'] + e_mdiff
+        masses_neutral['[M+CHOO]-'] = masses_neutral.mass + ion_mdiff['CHOO'] + e_mdiff
+        masses_neutral['[M-2H]-2'] = (masses_neutral.mass - 2 * ion_mdiff['H'] + 2 * e_mdiff) / 2
+        masses_neutral['[M+2Cl]-2'] = (masses_neutral.mass + 2 * ion_mdiff['Cl'] + 2 * e_mdiff) / 2
+        masses_neutral['[M+2CHOO]-2'] = (masses_neutral.mass + 2 * ion_mdiff['CHOO'] + 2 * e_mdiff) / 2
+        masses_neutral['[M+Cl-H]-2'] = (masses_neutral.mass + ion_mdiff['Cl'] - ion_mdiff['H'] + 2 * e_mdiff) / 2
+        masses_neutral['[M+CHOO-H]-2'] = (masses_neutral.mass + ion_mdiff['CHOO'] - ion_mdiff['H'] + 2 * e_mdiff) / 2
+        masses_neutral['[M+CHOO+Cl]-2'] = (masses_neutral.mass + ion_mdiff['CHOO'] + ion_mdiff['Cl'] + 2 * e_mdiff) / 2
     if "pos" in ESI_mode:
-        masses_neutral['[M+H]'] = masses_neutral.mass + ion_mdiff['H'] - e_mdiff
-        masses_neutral['[M+Na]'] = masses_neutral.mass + ion_mdiff['Na'] - e_mdiff
+        masses_neutral['[M+H]+'] = masses_neutral.mass + ion_mdiff['H'] - e_mdiff
+        masses_neutral['[M+Na]+'] = masses_neutral.mass + ion_mdiff['Na'] - e_mdiff
+        masses_neutral['[M+NH4]+'] = masses_neutral.mass + ion_mdiff['NH4'] - e_mdiff
+        masses_neutral['[M+K]+'] = masses_neutral.mass + ion_mdiff['K'] - e_mdiff
 
     # filter neutral molecules based on scan range
     # set values outside range to NaN
@@ -782,21 +785,23 @@ if len(list(set(modifications).intersection(modifications_anionic))) >= 1:
         masses_anionic['nmod_anionic'] = 1
     if "neg" in ESI_mode:
         ions = list(range(1, masses_anionic.nmod_anionic.max() + 1))
-        ions = list("[M-" + pd.Series(ions).astype(str) + "H]")
+        ions = list("[M-" + pd.Series(ions).astype(str) + "H]-" + pd.Series(ions).astype(str))
         for i in range(len(ions)):
             masses_anionic[ions[i]] = (masses_anionic.mass - ion_mdiff['H'] * (i + 1) + e_mdiff * (i + 1)) / (i + 1)
             masses_anionic[ions[i]] = masses_anionic[ions[i]].where(masses_anionic['nmod_anionic'] >= (i + 1))
-        masses_anionic = masses_anionic.rename({'[M-1H]': '[M-H]'}, axis=1)
-        masses_anionic['[M+Cl]'] = masses_anionic.mass + ion_mdiff['Cl'] + e_mdiff
-        masses_anionic['[M+CHOO]'] = masses_anionic.mass + ion_mdiff['CHOO'] + e_mdiff
-        masses_anionic['[M+2Cl]'] = (masses_anionic.mass + 2 * ion_mdiff['Cl'] + 2 * e_mdiff) / 2
-        masses_anionic['[M+2CHOO]'] = (masses_anionic.mass + 2 * ion_mdiff['CHOO'] + 2 * e_mdiff) / 2
-        masses_anionic['[M+Cl-H]'] = (masses_anionic.mass + ion_mdiff['Cl'] - ion_mdiff['H'] + 2 * e_mdiff) / 2
-        masses_anionic['[M+CHOO-H]'] = (masses_anionic.mass + ion_mdiff['CHOO'] - ion_mdiff['H'] + 2 * e_mdiff) / 2
-        masses_anionic['[M+CHOO+Cl]'] = (masses_anionic.mass + ion_mdiff['CHOO'] + ion_mdiff['Cl'] + 2 * e_mdiff) / 2
+        masses_anionic = masses_anionic.rename({'[M-1H]-1': '[M-H]-'}, axis=1)
+        masses_anionic['[M+Cl]-'] = masses_anionic.mass + ion_mdiff['Cl'] + e_mdiff
+        masses_anionic['[M+CHOO]-'] = masses_anionic.mass + ion_mdiff['CHOO'] + e_mdiff
+        masses_anionic['[M+2Cl]-2'] = (masses_anionic.mass + 2 * ion_mdiff['Cl'] + 2 * e_mdiff) / 2
+        masses_anionic['[M+2CHOO]-2'] = (masses_anionic.mass + 2 * ion_mdiff['CHOO'] + 2 * e_mdiff) / 2
+        masses_anionic['[M+Cl-H]-2'] = (masses_anionic.mass + ion_mdiff['Cl'] - ion_mdiff['H'] + 2 * e_mdiff) / 2
+        masses_anionic['[M+CHOO-H]-2'] = (masses_anionic.mass + ion_mdiff['CHOO'] - ion_mdiff['H'] + 2 * e_mdiff) / 2
+        masses_anionic['[M+CHOO+Cl]-2'] = (masses_anionic.mass + ion_mdiff['CHOO'] + ion_mdiff['Cl'] + 2 * e_mdiff) / 2
     if "pos" in ESI_mode:
-        masses_anionic['[M+H]'] = masses_anionic.mass + ion_mdiff['H'] - e_mdiff
-        masses_anionic['[M+Na]'] = masses_anionic.mass + ion_mdiff['Na'] - e_mdiff
+        masses_anionic['[M+H]+'] = masses_anionic.mass + ion_mdiff['H'] - e_mdiff
+        masses_anionic['[M+Na]+'] = masses_anionic.mass + ion_mdiff['Na'] - e_mdiff
+        masses_anionic['[M+NH4]+'] = masses_anionic.mass + ion_mdiff['NH4'] - e_mdiff
+        masses_anionic['[M+K]+'] = masses_anionic.mass + ion_mdiff['K'] - e_mdiff
 
     # filter anionic molecules based on scan range
     # set values outside range to NaN
@@ -831,18 +836,21 @@ if len(list(set(modifications).intersection(modifications_anionic))) >= 1:
 if len(list(set(modifications).intersection(modifications_anionic))) == 0:
     # calculate m/z values for neutral molecules
     if "neg" in ESI_mode:
-        masses['[M-H]'] = masses.mass - ion_mdiff['H'] + e_mdiff
-        masses['[M+Cl]'] = masses.mass + ion_mdiff['Cl'] + e_mdiff
-        masses['[M+CHOO]'] = masses.mass + ion_mdiff['CHOO'] + e_mdiff
-        masses['[M-2H]'] = (masses.mass - 2 * ion_mdiff['H'] + 2 * e_mdiff) / 2
-        masses['[M+2Cl]'] = (masses.mass + 2 * ion_mdiff['Cl'] + 2 * e_mdiff) / 2
-        masses['[M+2CHOO]'] = (masses.mass + 2 * ion_mdiff['CHOO'] + 2 * e_mdiff) / 2
-        masses['[M+Cl-H]'] = (masses.mass + ion_mdiff['Cl'] - ion_mdiff['H'] + 2 * e_mdiff) / 2
-        masses['[M+CHOO-H]'] = (masses.mass + ion_mdiff['CHOO'] - ion_mdiff['H'] + 2 * e_mdiff) / 2
-        masses['[M+CHOO+Cl]'] = (masses.mass + ion_mdiff['CHOO'] + ion_mdiff['Cl'] + 2 * e_mdiff) / 2
+        masses['[M-H]-'] = masses.mass - ion_mdiff['H'] + e_mdiff
+        masses['[M+Cl]-'] = masses.mass + ion_mdiff['Cl'] + e_mdiff
+        masses['[M+CHOO]-'] = masses.mass + ion_mdiff['CHOO'] + e_mdiff
+        masses['[M-2H]-2'] = (masses.mass - 2 * ion_mdiff['H'] + 2 * e_mdiff) / 2
+        masses['[M+2Cl]-2'] = (masses.mass + 2 * ion_mdiff['Cl'] + 2 * e_mdiff) / 2
+        masses['[M+2CHOO]-2'] = (masses.mass + 2 * ion_mdiff['CHOO'] + 2 * e_mdiff) / 2
+        masses['[M+Cl-H]-2'] = (masses.mass + ion_mdiff['Cl'] - ion_mdiff['H'] + 2 * e_mdiff) / 2
+        masses['[M+CHOO-H]-2'] = (masses.mass + ion_mdiff['CHOO'] - ion_mdiff['H'] + 2 * e_mdiff) / 2
+        masses['[M+CHOO+Cl]-2'] = (masses.mass + ion_mdiff['CHOO'] + ion_mdiff['Cl'] + 2 * e_mdiff) / 2
     if "pos" in ESI_mode:
-        masses['[M+H]'] = masses.mass + ion_mdiff['H']
-        masses['[M+Na]'] = masses.mass + ion_mdiff['Na']
+        masses['[M+H]+'] = masses.mass + ion_mdiff['H']
+        masses['[M+Na]+'] = masses.mass + ion_mdiff['Na']
+        masses['[M+NH4]+'] = masses.mass + ion_mdiff['NH4'] - e_mdiff
+        masses['[M+K]+'] = masses.mass + ion_mdiff['K'] - e_mdiff
+
 
     # filter neutral molecules based on scan range
     # set values outside range to NaN
