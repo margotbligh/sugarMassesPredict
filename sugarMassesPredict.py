@@ -782,7 +782,7 @@ if len(list(set(modifications).intersection(modifications_anionic))) >= 1:
         masses_anionic['nmod_anionic'] = masses_anionic[anionic_mod_used].sum(axis=1)
         masses_anionic['nmod_anionic'] = masses_anionic.nmod_anionic.astype(int)
     elif len(anionic_mod_used) == 1:
-        masses_anionic['nmod_anionic'] = 1
+        masses_anionic['nmod_anionic'] = masses_anionic[anionic_mod_used].astype(int)
     if "neg" in ESI_mode:
         ions = list(range(1, masses_anionic.nmod_anionic.max() + 1))
         ions = list("[M-" + pd.Series(ions).astype(str) + "H]-" + pd.Series(ions).astype(str))
