@@ -19,6 +19,7 @@ command line tool to calculate all possible glycan molecules and the *m/z* value
     * O-acetyl
     * O-methyl
     * anhydrobridge
+    * unsaturated
 * maximum number of modifications per monomer on average
 * ionisatione mode
 * scan range (*m/z*)
@@ -75,7 +76,7 @@ optional arguments:
                         space separated list of modifications to consider.
                         allowed values: none OR all OR any combination of
                         sulphate, carboxyl, phosphate, deoxy, nacetyl,
-                        omethyl, anhydrobridge, oacetyl
+                        omethyl, anhydrobridge, oacetyl, unsaturated
   -n int, --nmod_max int
                         max no. of modifications per monomer on average
                         {default 1}
