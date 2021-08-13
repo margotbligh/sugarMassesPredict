@@ -24,7 +24,8 @@ possible_modifications = ['sulphate',
                           'nacetyl',
                           'omethyl',
                           'anhydrobridge',
-                          'oacetyl']
+                          'oacetyl',
+                          'unsaturated']
 parser.add_argument('-dp',
                     '--dp_range',
                     help='DP range to predict within: two space separated numbers required (lower first)',
@@ -169,7 +170,8 @@ modifications_mdiff = {
     "nacetyl": 41.026549,
     "oacetyl": 42.010565,
     "phosphate": 79.966333,
-    "deoxy": -15.994915
+    "deoxy": -15.994915,
+    "unsaturated": -2.015650
 }
 
 # mass differences for labels
@@ -202,7 +204,8 @@ formulas = {
     "phosphate": [0, 1, 0, 3, 0, 1],
     "deoxy": [0, 0, 0, -1, 0, 0],
     "procainamide": [13, 21, 3, 0, 0, 0],
-    "benzoic_acid": [7, 4, 0, 1, 0, 0]
+    "benzoic_acid": [7, 4, 0, 1, 0, 0],
+    "unsaturated": [0, -2, 0, 0, 0, 0]
 }
 # modification types
 modifications_anionic = {"sulphate",
@@ -212,7 +215,8 @@ modifications_neutral = {"anhydrobridge",
                          "omethyl",
                          "nacetyl",
                          "oacetyl",
-                         "deoxy"}
+                         "deoxy",
+                         "unsaturated"}
 
 # isomers
 isomers_OHdiff = {"anhydrobridge",
