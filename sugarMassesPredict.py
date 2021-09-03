@@ -26,6 +26,7 @@ possible_modifications = ['carboxyl',
                           'anhydrobridge',
                           'oacetyl',
                           'unsaturated',
+                          'alditol',
                           'sulphate']
 parser.add_argument('-dp',
                     '--dp_range',
@@ -48,7 +49,7 @@ parser.add_argument('-p',
 
 parser.add_argument('-m',
                     '--modifications',
-                    help='space separated list of modifications to consider. allowed values: none OR all OR any combination of ' + ', '.join(
+                    help='space separated list of modifications to consider. note that alditol and unsaturated are max once per saccharide. allowed values: none OR all OR any combination of ' + ', '.join(
                         possible_modifications),
                     nargs='+',
                     dest='modifications',
@@ -58,7 +59,7 @@ parser.add_argument('-m',
 
 parser.add_argument('-n',
                     '--nmod_max',
-                    help='max no. of modifications per monomer on average {default 1}',
+                    help='max no. of modifications per monomer on average {default 1}. does not take into account unsaturated or alditol.',
                     nargs=1,
                     type=int,
                     default=1,
@@ -168,6 +169,17 @@ if "all" in modifications:
 if "sulphate" in modifications:
     modifications.append(modifications.pop(modifications.index('sulphate')))
 
+if "alditol" in modifications:
+    alditol_option = 'y'
+    modifications.remove('alditol')
+elif "alditol" not in modifications:
+    alditol_option = 'n'
+
+if "unsaturated" in modifications:
+    unsaturated_option = 'y'
+    modifications.remove('unsaturated')
+elif "unsaturated" not in modifications:
+    unsaturated_option = 'n'
 
 # 1: DEFINE MASSES / FORMULAS / ISOMERS / MODIFICATIONS VARIABLES / FUNCTIONS
 # ----------------------
@@ -189,7 +201,8 @@ modifications_mdiff = {
     "oacetyl": 42.010565,
     "phosphate": 79.966333,
     "deoxy": -15.994915,
-    "unsaturated": -2.015650
+    "unsaturated": -2.015650,
+    "alditol": 2.015650
 }
 
 # mass differences for labels
@@ -223,7 +236,8 @@ formulas = {
     "deoxy": [0, 0, 0, -1, 0, 0],
     "procainamide": [13, 21, 3, 0, 0, 0],
     "benzoic_acid": [7, 4, 0, 1, 0, 0],
-    "unsaturated": [0, -2, 0, 0, 0, 0]
+    "unsaturated": [0, -2, 0, 0, 0, 0],
+    "alditol": [0, +2, 0, 0, 0, 0]
 }
 # modification types
 modifications_anionic = {"sulphate",
@@ -512,6 +526,30 @@ if "procainamide" in label:
     elapsed_time = time.time() - start_time
     print("finished. elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
 
+if unsaturated_option == 'y':
+    print("--> adding unsaturated sugars")
+    masses_a = masses.copy()
+    masses_a.name = "unsaturated-" + masses.name
+    masses_a['unsaturated'] = 1
+    masses['unsaturated'] = 0
+    masses_a.mass = masses.mass + modifications_mdiff['unsaturated']
+    masses = masses.append(masses_a).reset_index()
+    del masses_a
+    elapsed_time = time.time() - start_time
+    print("finished. elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
+
+if alditol_option == 'y':
+    print("--> adding alditol sugars")
+    masses_a = masses.copy()
+    masses_a.name = "alditol-" + masses_a.name
+    masses_a['alditol'] = 1
+    masses['alditol'] = 0
+    masses_a.mass = masses_a.mass + modifications_mdiff['alditol']
+    masses = masses.append(masses_a).reset_index()
+    del masses_a
+    elapsed_time = time.time() - start_time
+    print("finished. elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
+
 gc.collect()
 
 # 3: GET FORMULAS
@@ -618,6 +656,10 @@ if "none" in modifications and pent_option == 0:
     masses['formula'] = formulas_final
 
 if "none" not in modifications and pent_option == 1:
+    if unsaturated_option == 'y':
+        modifications.append('unsaturated')
+    if alditol_option == 'y':
+        modifications.append('alditol')
     if "benzoic_acid" in label:
         dp = masses.dp
         hex = masses.hex
@@ -677,6 +719,10 @@ if "none" not in modifications and pent_option == 1:
     masses['formula'] = formulas_final
 
 if "none" not in modifications and pent_option == 0:
+    if unsaturated_option == 'y':
+        modifications.append('unsaturated')
+    if alditol_option == 'y':
+        modifications.append('alditol')
     if "benzoic_acid" in label:
         dp = masses.dp
         hex = masses.hex
@@ -743,6 +789,10 @@ print("\nstep #4: filtering based on number of modifications per monomer")
 print("----------------------------------------------------------------\n")
 
 if "none" not in modifications:
+    if unsaturated_option == 'y':
+        modifications.remove('unsaturated')
+    if alditol_option == 'y':
+        modifications.remove('alditol')
     masses['nmod'] = masses[modifications].sum(axis=1)
     masses['nmod_avg'] = masses.nmod / masses.dp
     masses = masses.drop(masses[masses.nmod_avg > nmod_max].index)
