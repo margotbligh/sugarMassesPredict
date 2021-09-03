@@ -5,6 +5,7 @@ import numpy as np
 import itertools
 import argparse
 import time
+import gc
 # start timer
 start_time = time.time()
 # suppress warnings
@@ -17,15 +18,15 @@ msg = "Script to predict possible masses of unknown sugars. Written by Margot Bl
 parser = argparse.ArgumentParser(description=msg)
 
 # add arguments
-possible_modifications = ['sulphate',
-                          'carboxyl',
+possible_modifications = ['carboxyl',
                           'phosphate',
                           'deoxy',
                           'nacetyl',
                           'omethyl',
                           'anhydrobridge',
                           'oacetyl',
-                          'unsaturated']
+                          'unsaturated',
+                          'sulphate']
 parser.add_argument('-dp',
                     '--dp_range',
                     help='DP range to predict within: two space separated numbers required (lower first)',
@@ -63,6 +64,16 @@ parser.add_argument('-n',
                     default=1,
                     dest='nmod_max',
                     metavar='int')
+
+parser.add_argument('-ds',
+                    '--double_sulphate',
+                    help='can monomers be double-sulphated: 0 for no {default}, 1 for yes. for this you MUST give a value of at least 2 to -n/--nmod_max',
+                    nargs=1,
+                    type=int,
+                    default=0,
+                    dest='double_sulphate',
+                    metavar='int',
+                    choices=[0, 1])
 
 parser.add_argument('-ld',
                     '--LorD_isomers',
@@ -134,6 +145,9 @@ modifications = args.modifications
 nmod_max = args.nmod_max
 if isinstance(nmod_max, list):
     nmod_max = nmod_max[0]
+double_sulphate = args.double_sulphate
+if isinstance(double_sulphate, list):
+    double_sulphate = double_sulphate[0]
 LorD_isomers = args.LorD_isomers
 OH_stereo = args.OH_stereo
 if isinstance(OH_stereo, list):
@@ -150,6 +164,10 @@ if isinstance(outfile, list):
 
 if "all" in modifications:
     modifications = possible_modifications
+
+if "sulphate" in modifications:
+    modifications.append(modifications.pop(modifications.index('sulphate')))
+
 
 # 1: DEFINE MASSES / FORMULAS / ISOMERS / MODIFICATIONS VARIABLES / FUNCTIONS
 # ----------------------
@@ -297,6 +315,7 @@ print("----------------------------------------\n")
 # build hexose molecules
 print("--> getting hexose masses")
 masses = getHexMasses(dp_range_list)
+elapsed_time = time.time() - start_time
 print("finished. elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
 
 if "none" in modifications and pent_option == 0 and 'benzoic_acid' in label:
@@ -314,12 +333,15 @@ if "none" in modifications and pent_option == 0 and 'benzoic_acid' in label:
     masses = masses.drop(columns='maxn_benzoic_acid')
     masses.name = masses.name + "-benzoic_acid-" + masses.benzoic_acid.astype(str)
     masses.name = masses.name.str.replace("-benzoic_acid-0", "")
+    elapsed_time = time.time() - start_time
     print("finished. elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
+    del masses_array
 
 # calculate masses for pentose molecules if selected
 if pent_option == 1:
     print("--> getting pentose masses")
     masses = getPentMasses(masses)
+    elapsed_time = time.time() - start_time
     print("finished. elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
 
 if "none" in modifications and pent_option == 1 and 'benzoic_acid' in label:
@@ -337,7 +359,9 @@ if "none" in modifications and pent_option == 1 and 'benzoic_acid' in label:
     masses = masses.drop(columns='maxn_benzoic_acid')
     masses.name = masses.name + "-benzoic_acid-" + masses.benzoic_acid.astype(str)
     masses.name = masses.name.str.replace("-benzoic_acid-0", "")
+    elapsed_time = time.time() - start_time
     print("finished. elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
+    del masses_array
 
 # add modifications
 if "none" not in modifications and pent_option == 1:
@@ -361,6 +385,7 @@ if "none" not in modifications and pent_option == 1:
                            'pent': pent})
     masses = pd.concat([masses, modification_numbers], axis=1)
     masses['mass'] = mass
+    elapsed_time = time.time() - start_time
     print("finished. elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
     # add benzoic acid
     if "benzoic_acid" in label and "anhydrobridge" not in modifications:
@@ -380,6 +405,7 @@ if "none" not in modifications and pent_option == 1:
         masses = masses.drop(columns='maxn_benzoic_acid')
         masses.name = masses.name + "-benzoic_acid-" + masses.benzoic_acid.astype(str)
         masses.name = masses.name.str.replace("-benzoic_acid-0", "")
+        elapsed_time = time.time() - start_time
         print("finished. elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
     if "benzoic_acid" in label and "anhydrobridge" in modifications:
         print("--> adding benzoic acid")
@@ -402,6 +428,7 @@ if "none" not in modifications and pent_option == 1:
         masses = masses.drop(columns='maxn_benzoic_acid')
         masses.name = masses.name + "-benzoic_acid-" + masses.benzoic_acid.astype(str)
         masses.name = masses.name.str.replace("-benzoic_acid-0", "")
+        elapsed_time = time.time() - start_time
         print("finished. elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
 
 if "none" not in modifications and pent_option == 0:
@@ -423,6 +450,7 @@ if "none" not in modifications and pent_option == 0:
                            'hex': hex})
     masses = pd.concat([masses, modification_numbers], axis=1)
     masses['mass'] = mass
+    elapsed_time = time.time() - start_time
     print("finished. elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
     # add benzoic acid
     if "benzoic_acid" in label and "anhydrobridge" not in modifications:
@@ -441,6 +469,7 @@ if "none" not in modifications and pent_option == 0:
         masses = masses.drop(columns='maxn_benzoic_acid')
         masses.name = masses.name + "-benzoic_acid-" + masses.benzoic_acid.astype(str)
         masses.name = masses.name.str.replace("-benzoic_acid-0", "")
+        elapsed_time = time.time() - start_time
         print("finished. elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
     if "benzoic_acid" in label and "anhydrobridge" in modifications:
         print("--> adding benzoic acid")
@@ -459,13 +488,31 @@ if "none" not in modifications and pent_option == 0:
         masses = masses.drop(columns='maxn_benzoic_acid')
         masses.name = masses.name + "-benzoic_acid-" + masses.benzoic_acid.astype(str)
         masses.name = masses.name.str.replace("-benzoic_acid-0", "")
+        elapsed_time = time.time() - start_time
         print("finished. elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
+
+if "sulphate" in modifications and double_sulphate == 1:
+    print("--> adding extra sulphate groups")
+    masses_s1 = masses.loc[masses['sulphate'] >=1]
+    masses_s2 = masses_s1
+    masses_s2.sulphate = masses_s1.sulphate + masses_s1.dp
+    masses_s2.name = masses_s2.name.str.replace("-sulphate-\d{1,2}", "")
+    masses_s2.name = masses_s2.name + '-sulphate-' + masses_s2.sulphate.astype(str)
+    masses_s2.mass = masses_s2.mass + modifications_mdiff['sulphate'] * (masses_s2.sulphate - masses_s2.dp)
+    masses = masses.append(masses_s2).reset_index()
+    del masses_s1
+    del masses_s2
+    elapsed_time = time.time() - start_time
+    print("finished. elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
 
 if "procainamide" in label:
     print("--> adding procainamide label")
     masses['name'] = masses.name + '-procA'
     masses['mass'] = masses.mass + procainamide_mdiff
+    elapsed_time = time.time() - start_time
     print("finished. elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
+
+gc.collect()
 
 # 3: GET FORMULAS
 # ----------------------
@@ -580,6 +627,7 @@ if "none" not in modifications and pent_option == 1:
                                          'hex': hex,
                                          'pent': pent,
                                          'benzoic_acid': benzoic_acid})
+        modification_numbers = masses[modifications]
         modification_numbers_array = np.array(modification_numbers)
         modification_numbers_array = modification_numbers_array.repeat(np.array(nmax_bc) + 1, axis=0)
         colNames = modification_numbers.columns
@@ -593,6 +641,7 @@ if "none" not in modifications and pent_option == 1:
         molecule_numbers = pd.DataFrame({'dp': dp,
                                          'hex': hex,
                                          'pent': pent})
+        modification_numbers = masses[modifications]
         molecule_numbers = pd.concat([molecule_numbers, modification_numbers], axis=1)
     molecules = list(molecule_numbers.drop('dp', axis=1).columns)
     atom_names = ["C", "H", "N", "O", "S", "P"]
@@ -635,6 +684,7 @@ if "none" not in modifications and pent_option == 0:
         molecule_numbers = pd.DataFrame({'dp': dp,
                                          'hex': hex,
                                          'benzoic_acid': benzoic_acid})
+        modification_numbers = masses[modifications]
         modification_numbers_array = np.array(modification_numbers)
         modification_numbers_array = modification_numbers_array.repeat(np.array(nmax_bc) + 1, axis=0)
         colNames = modification_numbers.columns
@@ -646,6 +696,7 @@ if "none" not in modifications and pent_option == 0:
         hex = masses.hex
         molecule_numbers = pd.DataFrame({'dp': dp,
                                          'hex': hex})
+        modification_numbers = masses[modifications]
         molecule_numbers = pd.concat([molecule_numbers, modification_numbers], axis=1)
     molecules = list(molecule_numbers.drop('dp', axis=1).columns)
     atom_names = ["C", "H", "N", "O", "S", "P"]
@@ -680,6 +731,9 @@ if "none" not in modifications and pent_option == 0:
     formulas_final = formulas_final.str.replace("\D0", "")
     masses['formula'] = formulas_final
 
+gc.collect()
+
+elapsed_time = time.time() - start_time
 print("finished. elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
 
 # 4: FILTER BASED ON NUMBER OF POSSIBLE MODIFICATIONS
@@ -698,6 +752,8 @@ if 'anhydrobridge' in modifications and pent_option == 1:
     masses.drop(indexDelete, inplace=True)
     masses = masses.reset_index()
 
+gc.collect()
+elapsed_time = time.time() - start_time
 print("finished. elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
 
 # 5: ESTIMATE NUMBERS OF POSSIBLE ISOMERS
@@ -741,6 +797,8 @@ if bond_stereo == 1:
     elif len(LorD_isomers) == 1 and OH_stereo == 0:
         masses['isomers'] = 2 ** masses.dp
 
+gc.collect()
+elapsed_time = time.time() - start_time
 print("finished. elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
 
 # 6: CALCULATE M/Z VALUES
@@ -885,6 +943,7 @@ if len(list(set(modifications).intersection(modifications_anionic))) == 0:
     cols_del = list(set(masses_final.columns).intersection(bad_cols))
     masses_final = masses_final.drop(columns=cols_del)
 
+elapsed_time = time.time() - start_time
 print("finished. elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
 
 # 7: WRITE OUTPUT TO FILE
