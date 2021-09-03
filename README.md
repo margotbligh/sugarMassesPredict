@@ -20,6 +20,7 @@ command line tool to calculate all possible glycan molecules and the *m/z* value
     * O-methyl
     * anhydrobridge
     * unsaturated
+    * alditol
 * maximum number of modifications per monomer on average
 * ionisatione mode
 * scan range (*m/z*)
@@ -58,8 +59,8 @@ sugarMassesPredict.py -h
 returns the following:
 ```
 usage: sugarMassesPredict.py [-h] -dp int int [-p int] -m str [str ...]
-                             [-n int] [-ld str [str ...]] [-oh int] [-b int]
-                             -i str [str ...] -s int int [-l label]
+                             [-n int] [-ds int] [-ld str [str ...]] [-oh int]
+                             [-b int] -i str [str ...] -s int int [-l label]
                              [-o filepath]
 
 Script to predict possible masses of unknown sugars. Written by Margot Bligh.
@@ -74,12 +75,19 @@ optional arguments:
                         hexose: 0 for no {default}, 1 for yes
   -m str [str ...], --modifications str [str ...]
                         space separated list of modifications to consider.
-                        allowed values: none OR all OR any combination of
-                        sulphate, carboxyl, phosphate, deoxy, nacetyl,
-                        omethyl, anhydrobridge, oacetyl, unsaturated
+                        note that alditol and unsaturated are max once per
+                        saccharide. allowed values: none OR all OR any
+                        combination of carboxyl, phosphate, deoxy, nacetyl,
+                        omethyl, anhydrobridge, oacetyl, unsaturated, alditol,
+                        sulphate
   -n int, --nmod_max int
                         max no. of modifications per monomer on average
-                        {default 1}
+                        {default 1}. does not take into account unsaturated or
+                        alditol.
+  -ds int, --double_sulphate int
+                        can monomers be double-sulphated: 0 for no {default},
+                        1 for yes. for this you MUST give a value of at least
+                        2 to -n/--nmod_max
   -ld str [str ...], --LorD_isomers str [str ...]
                         isomers calculated for L and/or D enantiomers {default
                         D only}. write space separated if both
@@ -103,6 +111,7 @@ optional arguments:
   -o filepath, --output filepath
                         filepath to .txt file for output table {default:
                         predicted_sugars.txt}
+
 ```
 
 
