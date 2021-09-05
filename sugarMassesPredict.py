@@ -926,7 +926,9 @@ if len(list(set(modifications).intersection(modifications_anionic))) >= 1:
     # concatenate dataframes and format nicely to only have useful columns
     masses_final = pd.concat([masses_anionic, masses_neutral])
     if "benzoic_acid" in label:
-        bad_cols = {'hex',
+        bad_cols = {'level_0',
+                    'index',
+                    'hex',
                     'pent',
                     'nmod',
                     'nmod_avg',
@@ -934,7 +936,9 @@ if len(list(set(modifications).intersection(modifications_anionic))) >= 1:
                     '_merge',
                     'benzoic_acid'}
     else:
-        bad_cols = {'hex',
+        bad_cols = {'level_0',
+                    'index',
+                    'hex',
                     'pent',
                     'nmod',
                     'nmod_avg',
@@ -975,7 +979,9 @@ if len(list(set(modifications).intersection(modifications_anionic))) == 0:
     # format nicely to only have useful columns
     masses_final = masses
     if "benzoic_acid" in label:
-        bad_cols = {'hex',
+        bad_cols = {'level_0',
+                    'index',
+                    'hex',
                     'pent',
                     'nmod',
                     'nmod_avg',
@@ -983,7 +989,9 @@ if len(list(set(modifications).intersection(modifications_anionic))) == 0:
                     '_merge',
                     'benzoic_acid'}
     else:
-        bad_cols = {'hex',
+        bad_cols = {'level_0',
+                    'index',
+                    'hex',
                     'pent',
                     'nmod',
                     'nmod_avg',
