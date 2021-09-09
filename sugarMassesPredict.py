@@ -512,7 +512,7 @@ if "sulphate" in modifications and double_sulphate == 1:
     masses_s2.sulphate = masses_s1.sulphate + masses_s1.dp
     masses_s2.name = masses_s2.name.str.replace("-sulphate-\d{1,2}", "")
     masses_s2.name = masses_s2.name + '-sulphate-' + masses_s2.sulphate.astype(str)
-    masses_s2.mass = masses_s2.mass + modifications_mdiff['sulphate'] * (masses_s2.sulphate - masses_s2.dp)
+    masses_s2.mass = masses_s2.mass + modifications_mdiff['sulphate'] * masses_s2.dp
     masses = masses.append(masses_s2).reset_index()
     del masses_s1
     del masses_s2
@@ -929,6 +929,7 @@ if len(list(set(modifications).intersection(modifications_anionic))) >= 1:
         bad_cols = {'level_0',
                     'index',
                     'hex',
+                    'alditol',
                     'pent',
                     'nmod',
                     'nmod_avg',
@@ -940,6 +941,7 @@ if len(list(set(modifications).intersection(modifications_anionic))) >= 1:
                     'index',
                     'hex',
                     'pent',
+                    'alditol',
                     'nmod',
                     'nmod_avg',
                     'nmod_anionic',
@@ -981,6 +983,7 @@ if len(list(set(modifications).intersection(modifications_anionic))) == 0:
     if "benzoic_acid" in label:
         bad_cols = {'level_0',
                     'index',
+                    'alditol',
                     'hex',
                     'pent',
                     'nmod',
@@ -991,6 +994,7 @@ if len(list(set(modifications).intersection(modifications_anionic))) == 0:
     else:
         bad_cols = {'level_0',
                     'index',
+                    'alditol',
                     'hex',
                     'pent',
                     'nmod',
