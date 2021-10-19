@@ -27,6 +27,7 @@ possible_modifications = ['carboxyl',
                           'oacetyl',
                           'unsaturated',
                           'alditol',
+                          'amino',
                           'sulphate']
 parser.add_argument('-dp',
                     '--dp_range',
@@ -202,7 +203,8 @@ modifications_mdiff = {
     "phosphate": 79.966333,
     "deoxy": -15.994915,
     "unsaturated": -2.015650,
-    "alditol": 2.015650
+    "alditol": 2.015650,
+    "amino": -0.984016
 }
 
 # mass differences for labels
@@ -222,6 +224,7 @@ ion_mdiff = {
 e_mdiff = 0.000548579909
 
 # formulas
+
 formulas = {
     "hex": [6, 12, 0, 6, 0, 0],
     "pent": [5, 10, 0, 5, 0, 0],
@@ -237,7 +240,8 @@ formulas = {
     "procainamide": [13, 21, 3, 0, 0, 0],
     "benzoic_acid": [7, 4, 0, 1, 0, 0],
     "unsaturated": [0, -2, 0, 0, 0, 0],
-    "alditol": [0, +2, 0, 0, 0, 0]
+    "alditol": [0, +2, 0, 0, 0, 0],
+    "amino": [0, +1, +1, -1, 0, 0]
 }
 # modification types
 modifications_anionic = {"sulphate",
@@ -248,7 +252,8 @@ modifications_neutral = {"anhydrobridge",
                          "nacetyl",
                          "oacetyl",
                          "deoxy",
-                         "unsaturated"}
+                         "unsaturated",
+                         "amino"}
 
 # isomers
 isomers_OHdiff = {"anhydrobridge",
