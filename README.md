@@ -1,6 +1,24 @@
 # sugarMassesPredict
 command line tool to calculate all possible glycan molecules and the *m/z* values of their ions given a set of input parameters
 
+NOTE: I have now also added an 'R' version - if you use the reticulate package in R, you can source the file (sugarMassesPredict-r.py) and then use the function 'predict_sugars' directly in R to generate output there. 
+
+e.g.
+```
+library(reticulate)
+py_install("pandas", "numpy")
+source_python("sugarMassesPredict-r.py")
+dp1 = as.integer(1)
+dp2 = as.integer(3)
+ESI_mode = 'pos'
+scan_range1 = as.integer(100)
+scan_range2 = as.integer(800)
+pent_option = as.integer(1)
+modifications = list('sulphate', 'deoxy')
+label = "procainamide"
+df <- predict_sugars(dp1 = dp1, dp2 = dp2, ESI_mode = ESI_mode, scan_range1 = scan_range1, scan_range2 = scan_range2, pent_option = pent_option, modifications = modifications, label = label) 
+```
+
 # dependencies
 * pandas
 * numpy
@@ -21,8 +39,9 @@ command line tool to calculate all possible glycan molecules and the *m/z* value
     * anhydrobridge
     * unsaturated
     * alditol
+    * amino
 * maximum number of modifications per monomer on average
-* ionisatione mode
+* ionisation mode
 * scan range (*m/z*)
 ## optional
 * label - current options are procainamide (added by reductive amination) and benzoic acid (added on free alcohol groups, will calculate glycans with no label to the maximum number of labels possible)
