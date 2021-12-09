@@ -550,7 +550,7 @@ if alditol_option == 'y':
     masses_a['alditol'] = 1
     masses['alditol'] = 0
     masses_a.mass = masses_a.mass + modifications_mdiff['alditol']
-    masses = masses.append(masses_a).reset_index()
+    masses = masses.append(masses_a).reset_index(drop = True)
     del masses_a
     elapsed_time = time.time() - start_time
     print("finished. elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
@@ -1019,8 +1019,11 @@ print("finished. elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(elapse
 print("\nstep #7: writing output to file % s" % outfile)
 print("----------------------------------------------------------------\n")
 
+
 masses_final.to_csv(outfile,
                     sep='\t',
                     header=True,
                     index=False,
                     na_rep="NA")
+
+
