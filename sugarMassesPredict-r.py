@@ -18,6 +18,7 @@ possible_modifications = ['carboxyl',
                           'unsaturated',
                           'alditol',
                           'amino',
+                          'dehydrated',
                           'sulphate']
 # hexose and water masses to build molecule base
 hex_mass = 180.06339
@@ -26,7 +27,7 @@ water_mass = 18.010565
 pent_mdiff = -30.010566
 modifications_mdiff = {
     "sulphate": 79.956817,
-    "anhydrobridge": -18.010566,
+    "anhydrobridge": -water_mass,
     "omethyl": 14.01565,
     "carboxyl": 13.979265,
     "nacetyl": 41.026549,
@@ -35,7 +36,8 @@ modifications_mdiff = {
     "deoxy": -15.994915,
     "unsaturated": -2.015650,
     "alditol": 2.015650,
-    "amino": -0.984016
+    "amino": -0.984016,
+    "dehydrated": -water_mass
 }
 
 # mass differences for labels
@@ -72,7 +74,8 @@ formulas = {
     "benzoic_acid": [7, 4, 0, 1, 0, 0],
     "unsaturated": [0, -2, 0, 0, 0, 0],
     "alditol": [0, +2, 0, 0, 0, 0],
-    "amino": [0, +1, +1, -1, 0, 0]
+    "amino": [0, +1, +1, -1, 0, 0],
+    "dehydrated": [0, -2, 0, -1, 0, 0]
 }
 # modification types
 modifications_anionic = {"sulphate",
@@ -84,7 +87,8 @@ modifications_neutral = {"anhydrobridge",
                          "oacetyl",
                          "deoxy",
                          "unsaturated",
-                         "amino"}
+                         "amino",
+                         "dehydrated"}
 
 def predict_sugars(dp1=1, dp2=2, ESI_mode='pos', scan_range1=100,
                    scan_range2=1000, pent_option=0, modifications='none', nmod_max=1, double_sulphate=0, label='none'):
@@ -131,6 +135,11 @@ def predict_sugars(dp1=1, dp2=2, ESI_mode='pos', scan_range1=100,
         modifications.remove('unsaturated')
     elif "unsaturated" not in modifications:
         unsaturated_option = 'n'
+    if "dehydrated" in modifications:
+        dehydrated_option = 'y'
+        modifications.remove('dehydrated')
+    elif "dehydrated" not in modifications:
+        dehydrated_option = 'n'
     #calculate possible masses
     print("\nstep #2: calculating all possible masses")
     print("----------------------------------------\n")
@@ -259,6 +268,15 @@ def predict_sugars(dp1=1, dp2=2, ESI_mode='pos', scan_range1=100,
         masses_a.mass = masses_a.mass + modifications_mdiff['alditol']
         masses = masses.append(masses_a).reset_index(drop=True)
         del masses_a
+    if dehydrated_option == 'y':
+        print("--> adding dehydration to sugars")
+        masses_a = masses.copy()
+        masses_a.name = "dehydrated-" + masses_a.name
+        masses_a['dehydrated'] = 1
+        masses['dehydrated'] = 0
+        masses_a.mass = masses_a.mass + modifications_mdiff['dehydrated']
+        masses = masses.append(masses_a).reset_index(drop=True)
+        del masses_a
     print("\nstep #3: building formulas")
     print("----------------------------------------\n")
     if "none" in modifications and pent_option == 1:
@@ -339,6 +357,8 @@ def predict_sugars(dp1=1, dp2=2, ESI_mode='pos', scan_range1=100,
             modifications.append('unsaturated')
         if alditol_option == 'y':
             modifications.append('alditol')
+        if dehydrated_option == 'y':
+            modifications.append('dehydrated')
         dp = masses.dp
         hex = masses.hex
         pent = masses.pent
@@ -382,6 +402,8 @@ def predict_sugars(dp1=1, dp2=2, ESI_mode='pos', scan_range1=100,
             modifications.append('unsaturated')
         if alditol_option == 'y':
             modifications.append('alditol')
+        if dehydrated_option == 'y':
+            modifications.append('dehydrated')
         dp = masses.dp
         hex = masses.hex
         molecule_numbers = pd.DataFrame({'dp': dp,'hex': hex})
@@ -426,6 +448,8 @@ def predict_sugars(dp1=1, dp2=2, ESI_mode='pos', scan_range1=100,
             modifications.remove('unsaturated')
         if alditol_option == 'y':
             modifications.remove('alditol')
+        if dehydrated_option == 'y':
+            modifications.remove('dehydrated')
         masses['nmod'] = masses[modifications].sum(axis=1)
         masses['nmod_avg'] = masses.nmod / masses.dp
         masses = masses.drop(masses[masses.nmod_avg > nmod_max].index)
@@ -502,7 +526,7 @@ def predict_sugars(dp1=1, dp2=2, ESI_mode='pos', scan_range1=100,
         masses_anionic = masses_anionic.dropna(subset=my_cols, how='all')
         # concatenate dataframes and format nicely to only have useful columns
         masses_final = pd.concat([masses_anionic, masses_neutral])
-        bad_cols = {'level_0','index','hex','pent','alditol','nmod','nmod_avg','nmod_anionic','_merge'}
+        bad_cols = {'level_0','index','hex','pent','alditol','nmod','nmod_avg','nmod_anionic','_merge', 'dehydrated'}
         bad_cols.update(modifications_anionic)
         bad_cols.update(modifications_neutral)
         cols_del = list(set(masses_final.columns).intersection(bad_cols))
@@ -533,7 +557,7 @@ def predict_sugars(dp1=1, dp2=2, ESI_mode='pos', scan_range1=100,
         masses = masses.dropna(subset=my_cols, how='all')
         # format nicely to only have useful columns
         masses_final = masses
-        bad_cols = {'level_0','index','alditol','hex','pent','nmod','nmod_avg','nmod_anionic','_merge'}
+        bad_cols = {'level_0','index','alditol','hex','pent','nmod','nmod_avg','nmod_anionic','_merge', 'dehydrated'}
         bad_cols.update(modifications_neutral)
         cols_del = list(set(masses_final.columns).intersection(bad_cols))
         masses_final = masses_final.drop(columns=cols_del)
