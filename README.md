@@ -1,7 +1,7 @@
 # sugarMassesPredict
 command line tool to calculate all possible glycan molecules and the *m/z* values of their ions given a set of input parameters
 
-**NOTE: I have now also added an 'R' version - if you use the reticulate package in R, you can source the file (sugarMassesPredict-r.py) and then use the function 'predict_sugars' directly in R to generate output there. **
+**NOTE: I have now also added an 'R' version - if you use the reticulate package in R, you can source the file (sugarMassesPredict-r.py) and then use the function 'predict_sugars' directly in R to generate output there.**
 
 this tool is being frequently updated :) if you have any questions or issue please feel free to contact me at mbligh@mpi-bremen.de
 
