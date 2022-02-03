@@ -28,6 +28,7 @@ possible_modifications = ['carboxyl',
                           'unsaturated',
                           'alditol',
                           'amino',
+                          'dehydrated',
                           'sulphate']
 parser.add_argument('-dp',
                     '--dp_range',
@@ -50,7 +51,7 @@ parser.add_argument('-p',
 
 parser.add_argument('-m',
                     '--modifications',
-                    help='space separated list of modifications to consider. note that alditol and unsaturated are max once per saccharide. allowed values: none OR all OR any combination of ' + ', '.join(
+                    help='space separated list of modifications to consider. note that alditol, dehydrated and unsaturated are max once per saccharide. allowed values: none OR all OR any combination of ' + ', '.join(
                         possible_modifications),
                     nargs='+',
                     dest='modifications',
@@ -60,7 +61,7 @@ parser.add_argument('-m',
 
 parser.add_argument('-n',
                     '--nmod_max',
-                    help='max no. of modifications per monomer on average {default 1}. does not take into account unsaturated or alditol.',
+                    help='max no. of modifications per monomer on average {default 1}. does not take into account unsaturated, dehydrated or alditol.',
                     nargs=1,
                     type=int,
                     default=1,
@@ -182,6 +183,13 @@ if "unsaturated" in modifications:
 elif "unsaturated" not in modifications:
     unsaturated_option = 'n'
 
+if "dehydrated" in modifications:
+    dehydrated_option = 'y'
+    modifications.remove('dehydrated')
+elif "dehydrated" not in modifications:
+    dehydrated_option = 'n'
+
+
 # 1: DEFINE MASSES / FORMULAS / ISOMERS / MODIFICATIONS VARIABLES / FUNCTIONS
 # ----------------------
 
@@ -195,7 +203,7 @@ water_mass = 18.010565
 pent_mdiff = -30.010566
 modifications_mdiff = {
     "sulphate": 79.956817,
-    "anhydrobridge": -18.010566,
+    "anhydrobridge": -water_mass,
     "omethyl": 14.01565,
     "carboxyl": 13.979265,
     "nacetyl": 41.026549,
@@ -204,7 +212,8 @@ modifications_mdiff = {
     "deoxy": -15.994915,
     "unsaturated": -2.015650,
     "alditol": 2.015650,
-    "amino": -0.984016
+    "amino": -0.984016,
+    "dehydrated": -water_mass
 }
 
 # mass differences for labels
@@ -241,7 +250,8 @@ formulas = {
     "benzoic_acid": [7, 4, 0, 1, 0, 0],
     "unsaturated": [0, -2, 0, 0, 0, 0],
     "alditol": [0, +2, 0, 0, 0, 0],
-    "amino": [0, +1, +1, -1, 0, 0]
+    "amino": [0, +1, +1, -1, 0, 0],
+    "dehydrated": [0, -2, 0, -1, 0, 0]
 }
 # modification types
 modifications_anionic = {"sulphate",
@@ -253,7 +263,8 @@ modifications_neutral = {"anhydrobridge",
                          "oacetyl",
                          "deoxy",
                          "unsaturated",
-                         "amino"}
+                         "amino",
+                         "dehydrated"}
 
 # isomers
 isomers_OHdiff = {"anhydrobridge",
@@ -555,6 +566,18 @@ if alditol_option == 'y':
     elapsed_time = time.time() - start_time
     print("finished. elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
 
+if dehydrated_option == 'y':
+    print("--> adding dehydration")
+    masses_a = masses.copy()
+    masses_a.name = "dehydrated-" + masses_a.name
+    masses_a['dehydrated'] = 1
+    masses['dehydrated'] = 0
+    masses_a.mass = masses_a.mass + modifications_mdiff['dehydrated']
+    masses = masses.append(masses_a).reset_index(drop = True)
+    del masses_a
+    elapsed_time = time.time() - start_time
+    print("finished. elapsed time = " + time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
+
 gc.collect()
 
 # 3: GET FORMULAS
@@ -665,6 +688,8 @@ if "none" not in modifications and pent_option == 1:
         modifications.append('unsaturated')
     if alditol_option == 'y':
         modifications.append('alditol')
+    if dehydrated_option == 'y':
+        modifications.append('dehydrated')
     if "benzoic_acid" in label:
         dp = masses.dp
         hex = masses.hex
@@ -728,6 +753,8 @@ if "none" not in modifications and pent_option == 0:
         modifications.append('unsaturated')
     if alditol_option == 'y':
         modifications.append('alditol')
+    if dehydrated_option == 'y':
+        modifications.append('dehydrated')
     if "benzoic_acid" in label:
         dp = masses.dp
         hex = masses.hex
@@ -798,6 +825,8 @@ if "none" not in modifications:
         modifications.remove('unsaturated')
     if alditol_option == 'y':
         modifications.remove('alditol')
+    if dehydrated_option == 'y':
+        modifications.remove('dehydrated')
     masses['nmod'] = masses[modifications].sum(axis=1)
     masses['nmod_avg'] = masses.nmod / masses.dp
     masses = masses.drop(masses[masses.nmod_avg > nmod_max].index)
@@ -936,6 +965,7 @@ if len(list(set(modifications).intersection(modifications_anionic))) >= 1:
                     'hex',
                     'alditol',
                     'pent',
+                    'dehydrated',
                     'nmod',
                     'nmod_avg',
                     'nmod_anionic',
@@ -947,6 +977,7 @@ if len(list(set(modifications).intersection(modifications_anionic))) >= 1:
                     'hex',
                     'pent',
                     'alditol',
+                    'dehydrated',
                     'nmod',
                     'nmod_avg',
                     'nmod_anionic',
@@ -989,6 +1020,7 @@ if len(list(set(modifications).intersection(modifications_anionic))) == 0:
         bad_cols = {'level_0',
                     'index',
                     'alditol',
+                    'dehydrated',
                     'hex',
                     'pent',
                     'nmod',
@@ -1001,6 +1033,7 @@ if len(list(set(modifications).intersection(modifications_anionic))) == 0:
                     'index',
                     'alditol',
                     'hex',
+                    'dehydrated',
                     'pent',
                     'nmod',
                     'nmod_avg',
