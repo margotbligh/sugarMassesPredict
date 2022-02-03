@@ -3,6 +3,10 @@ command line tool to calculate all possible glycan molecules and the *m/z* value
 
 NOTE: I have now also added an 'R' version - if you use the reticulate package in R, you can source the file (sugarMassesPredict-r.py) and then use the function 'predict_sugars' directly in R to generate output there. 
 
+note that this tool is being frequently updated :) if you have any questions or issue please feel free to contact me at mbligh@mpi-bremen.de
+word of caution: please note that this tool will predict sugars that are not possible as the nature of sugar chemistry means that it would take a long time to add in all the constraints!
+
+
 e.g.
 ```
 library(reticulate)
@@ -40,6 +44,7 @@ df <- predict_sugars(dp1 = dp1, dp2 = dp2, ESI_mode = ESI_mode, scan_range1 = sc
     * unsaturated
     * alditol
     * amino
+    * dehydrated
 * maximum number of modifications per monomer on average
 * ionisation mode
 * scan range (*m/z*)
